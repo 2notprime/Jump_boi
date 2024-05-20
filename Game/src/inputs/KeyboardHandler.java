@@ -1,80 +1,98 @@
 package inputs;
 
+import core.Window;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
-import core.Window;
+import javax.imageio.ImageIO;
 
-public class KeyboardHandler implements KeyListener{
-	
-	private Window w;
-	private long start_time;
-	private long stop_time;
-	private long pressed_time;
-	
-	public KeyboardHandler(Window w)	{
-		this.w = w;
-		w.addKeyListener(this);
-	}
-	
-	public void keyTyped(KeyEvent e)	{
-		
-	}
-	private boolean MovingLeft = false;
-	private boolean holding_key = false;
-	private int direction = 1; // left = -1, right = 1
-	private boolean Jumping;
-	public void keyPressed(KeyEvent e)	{
-		int key = e.getKeyCode();
-		
-		if (w.level.player.vely == 0)	{
-			if (key == KeyEvent.VK_SPACE && holding_key == false)	{
-				start_time = System.currentTimeMillis();
-				holding_key = true;
-			}
-			if (key == KeyEvent.VK_D)	{
-				w.level.player.velx = w.level.player.speed;
-				MovingLeft = false;
-				direction = 1;
-			}
-			if (key == KeyEvent.VK_A)	{
-				w.level.player.velx = - w.level.player.speed;
-				MovingLeft = true;
-				direction = -1;
-			}
-			if (key == KeyEvent.VK_W)	{
-				if (w.level.player.vely == 0)	{
-					w.level.player.vely = - w.level.player.JumpVelocity;
-				}
-			}
-		}
-	}
+public class KeyboardHandler implements KeyListener {
+   private Window w;
+   private long start_time;
+   private long stop_time;
+   private long pressed_time;
+   private boolean MovingLeft = false;
+   public boolean holding_key = false;
+   private int direction = 1;
+   private boolean Jumping;
+   public KeyboardHandler(Window w) {
+      this.w = w;
+      w.addKeyListener(this);
+   }
 
-	public void keyReleased(KeyEvent e)	{
-		int key = e.getKeyCode();
-		
-		if (w.level.player.vely == 0)	{
-			if (key == KeyEvent.VK_D)	{
-				w.level.player.velx = 0;
-			}
-			if (key == KeyEvent.VK_A && MovingLeft)	{
-				w.level.player.velx = 0;
-			}
-			
-			if (key == KeyEvent.VK_SPACE && holding_key == true)	{
-				stop_time = System.currentTimeMillis();
-				pressed_time = Math.min((stop_time - start_time), 1000);
-				w.level.player.vely = - (double) pressed_time * 0.005;
-				w.level.player.velx = direction * pressed_time * 0.002;
-				Jumping = true;
-				holding_key = false;
-			
-		}
-	}
-		
-			
-		
-		
-	}
+   public void keyTyped(KeyEvent e) {
+   }
 
+   public void keyPressed(KeyEvent e) {
+      int key = e.getKeyCode();
+      if (this.w.level.player.vely == 0.0) {
+         if (key == 32 && !this.holding_key) {
+            this.start_time = System.currentTimeMillis();
+            this.holding_key = true;
+            this.w.level.player.characterImage=this.w.level.player.upright1;
+            this.w.level.player.stand=this.w.level.player.upright1;
+         }
+
+         else if (key == 68) {
+        	 this.w.level.player.preR = true;
+        	 this.w.level.player.preL = false;
+            if (this.w.level.player.IsCollisionR && !this.w.level.player.Falling) {
+            	this.w.level.player.velx = 0;
+            }
+            
+            else {
+                this.w.level.player.velx = (double)this.w.level.player.speed;
+                this.MovingLeft = false;
+                this.direction = 1;
+            }
+
+         }
+
+         else if (key == 65) {
+        	this.w.level.player.preL = true;
+        	this.w.level.player.preR = false;
+            if (this.w.level.player.IsCollisionL && !this.w.level.player.Falling) {
+            	this.w.level.player.velx = 0;
+            }
+            else {
+                this.w.level.player.velx = (double)(-this.w.level.player.speed);
+                this.MovingLeft = true;
+                this.direction = -1;
+            }
+         }
+
+         // if (key == 87 && this.w.level.player.vely == 0.0) {
+         //    this.w.level.player.vely = -this.w.level.player.JumpVelocity;
+         // }
+      }
+
+   }
+   public void keyReleased(KeyEvent e) {
+      int key = e.getKeyCode();
+      if (this.w.level.player.vely == 0.0) {
+         if (key == 68 && !this.MovingLeft) {
+            this.w.level.player.velx = 0.0;
+            this.w.level.player.stand=this.w.level.player.standright;
+            this.w.level.player.characterImage=this.w.level.player.stand;
+         }
+
+         if (key == 65 && this.MovingLeft) {
+        	 this.w.level.player.velx = 0.0;
+        	 this.w.level.player.stand=this.w.level.player.standleft;
+             this.w.level.player.characterImage=this.w.level.player.stand;
+         }
+
+         if (key == 32 && this.holding_key) {
+            this.stop_time = System.currentTimeMillis();
+            this.pressed_time = Math.min(this.stop_time - this.start_time, 1000L);
+            this.w.level.player.vely = -((double)this.pressed_time) * 0.01;
+            this.w.level.player.velx = (double)((long)this.direction * this.pressed_time) * 0.006;
+            this.Jumping = true;
+            this.holding_key = false;
+         }
+      }
+
+   }
 }
+
+
