@@ -4,22 +4,32 @@ import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferStrategy;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
+
 import inputs.KeyboardHandler;
 import level.LevelHandler;
 import objects.Player;
+import ui.MenuHandler;
 
 public class Window extends Canvas implements Runnable {
-	
+	public BufferedImage image;
 	// Variables
 	private static final long serialVersionUID = 1L;
 	private Thread thread;
 	private boolean running = false;
 	
 	private KeyboardHandler Klistener = new KeyboardHandler(this);
-	
+
+	public GameState gs = GameState.Menu;
+
+	public MenuHandler menu = new MenuHandler(this);
 	public LevelHandler level = new LevelHandler(this);
+
+	public static final int width = 1920, height = 1080; 
 	// Variables
 
 	
@@ -28,22 +38,31 @@ public class Window extends Canvas implements Runnable {
 		JFrame frame = new JFrame(Title);
 		
 		// Set size
-		frame.setSize(800, 600);
+		frame.setSize(width, height);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		// Set logic 
-		frame.setResizable(true);
+		frame.setResizable(false);
 		frame.setVisible(true);
 		frame.add(this);
-	
+		getImage();
 	}
 	
+	public void getImage() {
+		try {
+		    // Sử dụng đường dẫn bắt đầu từ tên package
+			image = ImageIO.read(getClass().getResourceAsStream("/map/wall.png"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+	}
+
 	// Start the game logic 
 	public void start()	{
 		running = true;
 		thread = new Thread(this);
-		thread.start();
-		
+		thread.start();	
 	}
 	
 	// Stop the game logic
@@ -91,7 +110,9 @@ public class Window extends Canvas implements Runnable {
 	// Update window
 	public void tick() {
 //		player.tick();
-		level.tick();
+		if (gs == GameState.Game)	level.tick();
+		if (gs == GameState.Menu)	menu.tick();
+
 	}
 	
 	// Paint onto the window
@@ -104,21 +125,32 @@ public class Window extends Canvas implements Runnable {
 		Graphics g = bs.getDrawGraphics();
 		g.setColor(Color.white);
 		g.fillRect(0, 0, this.getWidth(), this.getHeight());
-		
+		if (image != null) {
+	        g.drawImage(image, 0,0, null); // Thay đổi x và y là vị trí bạn muốn vẽ hình ảnh lên
+		}
 //		player.Render(g);
-		level.Render(g);
-		
-		
-		
+		if (gs == GameState.Game)	level.Render(g);
+		if (gs == GameState.Menu)	menu.Render(g);
+
 		bs.show();
 		g.dispose();
 	}
+//	public void Render() {
+//		BufferStrategy bs = this.getBufferStrategy();
+//		if (bs == null)	{
+//			this.createBufferStrategy(2);
+//			bs = this.getBufferStrategy();
+//		}
+//		Graphics g = bs.getDrawGraphics();
+//		g.setColor(Color.white);
+//		g.fillRect(0, 0, this.getWidth(), this.getHeight());
+//		
+////		player.Render(g);
+//		level.Render(g);
+//		
+//		
+//		
+//		bs.show();
+//		g.dispose();
+//	}
 }
-
-
-
-
-
-
-
-
