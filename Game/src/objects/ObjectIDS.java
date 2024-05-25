@@ -1,6 +1,10 @@
 package objects;
 
 public class ObjectIDS {
-	public static byte Platform = Byte.MIN_VALUE;
-	public static byte Spike = Byte.MIN_VALUE + 1;
+   public static byte Platform = -128;
+   public static byte Spike = -127;
+   public static byte back=-126;
+   public ObjectIDS() {
+   }
 }
+
