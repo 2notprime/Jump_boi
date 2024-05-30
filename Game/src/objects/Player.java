@@ -1,6 +1,8 @@
 package objects;
 
 import core.Window;
+import level.SoundPlayer;
+
 import java.awt.Graphics;
 import java.awt.Image;
 import javax.imageio.ImageIO;
@@ -30,6 +32,7 @@ public class Player {
    public int spriteCounter=0;
    public int spriteNum=1;
    
+   public SoundPlayer soundPlayer;
    
    
    
@@ -40,12 +43,35 @@ public class Player {
       this.y = (double)y; // Khởi tạo vị trí theo trục y
       this.width = width; // Khởi tạo chiều rộng
       this.height = height; // Khởi tạo chiều cao
+      soundPlayer = new SoundPlayer();
       getplayerimage();
       try {
 	   	    characterImage=ImageIO.read(getClass().getResourceAsStream(imagePath));
 	   	}catch(IOException e) {
 	   		e.printStackTrace();
 	   	}
+   }
+   public void jump() {
+       // Logic for jumping;
+       soundPlayer.playSound("/soundeffects/boi_jump.wav");
+       //soundPlayer.setVolume(-10.0f);
+   }
+
+   public void collide() {
+       // Logic for colliding
+       soundPlayer.playSound("/soundeffects/boi_bump.wav");
+       //soundPlayer.setVolume(-10.0f);
+   }
+
+   public void land() {
+       // Logic for landing
+       soundPlayer.playSound("/soundeffects/boi_land.wav");
+       //soundPlayer.setVolume(-10.0f);
+   }
+   public void splat() {
+       // Logic for landing
+       soundPlayer.playSound("/soundeffects/boi_splat.wav");
+       soundPlayer.setVolume(-30.0f);
    }
 
    // Phương thức tick để cập nhật trạng thái của người chơi
@@ -61,6 +87,7 @@ public class Player {
          this.vely = 0.0; // Đặt vận tốc theo trục y về 0 nếu không đang rơi và vận tốc vẫn dương
       }
       if(velx>0&&vely==0) {
+    	  //splat();
     	  jump=upright1;
     	  if(spriteNum==1) {
     			characterImage=right1;
@@ -70,6 +97,7 @@ public class Player {
     		}
       }
       else if(velx<0&&vely==0) {
+    	  //splat();
     	  jump=upleft1;
     	  if(spriteNum==1) {
   			characterImage=left1;
@@ -132,7 +160,6 @@ public class Player {
    public void Collisions() {
 	  this.IsCollisionL = false;
 	  this.IsCollisionR = false;
-
       this.Falling = true; // Ban đầu, giả sử người chơi đang rơi
       Iterator var2 = this.w.level.items.iterator();
 
@@ -142,7 +169,6 @@ public class Player {
             Platform p = (Platform)i;
             Rectangle playerRect = new Rectangle((int)(this.x + this.velx), (int)(this.y + this.vely), this.width, this.height);
             if (playerRect.intersects((double)p.x, (double)p.y, (double)p.width, (double)p.height)) {
-            	
                // Xử lý va chạm với platform
                if (this.y + (double)this.height <= (double)(p.y + 1)) {
                   this.Falling = false; // Nếu đang chạm đất, đặt trạng thái rơi về false
@@ -150,14 +176,17 @@ public class Player {
                      this.vely = 0.0;
                      this.y = (double)(p.y - this.height + 1); // Đặt vị trí y để ngăn người chơi "đè" vào nền
                      this.velx = 0.0; // Dừng người chơi khi chạm đất
+                     land();
                   }
                } else {//
             	   if (this.velx > 0)	{
                		   this.IsCollisionR = true;
+               		   this.w.Klistener.direction=-1;
                		   this.IsCollisionL = false;
                	   }
             	   else if(this.velx<0) 	{
                 		   this.IsCollisionL = true;
+                		   this.w.Klistener.direction=1;
                 		   this.IsCollisionR = false;
                 	   }
             	   else {
@@ -174,20 +203,22 @@ public class Player {
             	   }
                     
             	  if(this.Falling==false) {
-            		  
             		  this.velx=0;
-       
             	  }
-            	  else this.velx *= -0.6; // Đảo ngược hướng di chuyển nếu va chạm với platform từ bên trái hoặc phải
+            	  else {
+            		  collide();
+            		  this.velx *= -0.5; // Đảo ngược hướng di chuyển nếu va chạm với platform từ bên trái hoặc phải
+            	  }
                   
                }
                //else this.velx=0;
 
                if (this.vely < 0.0 && this.x + (double)this.width > (double)(p.x + 1) && this.x < (double)(p.x + p.width - 1)) {
+            	   collide();
                   this.Falling = true; // Nếu va chạm phía trên, đặt trạng thái rơi về true
-                  this.velx *= -0.6; // Đảo ngược hướng di chuyển
+                  this.velx *= -0.4; // Đảo ngược hướng di chuyển
                   this.y -= this.vely + 1.0; // Đặt lại vị trí y
-                  this.vely *= -0.8; // Đảo ngược vận tốc theo trục y
+                  this.vely *= -0.7; // Đảo ngược vận tốc theo trục y
                }
             }
          }
